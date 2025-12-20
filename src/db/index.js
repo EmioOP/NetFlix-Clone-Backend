@@ -20,6 +20,7 @@ const connectDB = async () => {
         return connection
     } catch (error) {
         console.log("Something went wrong while connecting to database, details: ", error)
+        throw error
     }
 }
 
