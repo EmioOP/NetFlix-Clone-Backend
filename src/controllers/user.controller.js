@@ -3,29 +3,32 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import bcryptjs from "bcryptjs";
-
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { defaultAvatar } from "../constants.js";
 
 
 const registerUser = asyncHandler(async(req,res)=>{
-    const {username,fullName,email,password,avatar} = req.body
+    const {username,fullName,email,password} = req.body
 
-    const defaultAvatar = 'https://m.gettywallpapers.com/wp-content/uploads/2023/09/Pfp-Hachiman-Hikigaya.jpg'
-
-
-    if([username,fullName,password,email].some((field)=> field.trim() === "")){
+    if([username,fullName,password,email].some((field )=> field.trim() === "")){
         throw new ApiError(404,"All fields are required",)
     }
 
     // const existedUser = await findOne(email,username) //implement logic to check email or username is already used
 
+    //hahsing password
     const hashedPassword = await bcryptjs.hash(password,10)
 
+    //file uploading feature
+    const avatarLocalPath = req.file?.path
+    const avatar = await uploadOnCloudinary(avatarLocalPath)
+    
     const user = await createUser({
         username,
         email,
         fullName,
         password:hashedPassword,
-        avatar:avatar?avatar:defaultAvatar
+        avatar:avatar?avatar.url:defaultAvatar
     })
 
     if(!user){
