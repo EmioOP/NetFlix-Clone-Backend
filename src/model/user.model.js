@@ -51,7 +51,7 @@ const findByIdNoPassAndRefToken = async (id) => {
 const findOneUser = async (email, username) => {
     //we can use if condition to check which one is passed
     const [result] = await pool.query(`SELECT * FROM users WHERE email = ? OR username = ?`, [email, username])
-    console.log(result)
+    // console.log(result)
     return result;
 }
 

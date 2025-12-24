@@ -6,6 +6,7 @@ import bcryptjs from "bcryptjs";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { defaultAvatar } from "../constants.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/generateAccessAndRefreshToken.js";
+import jwt from 'jsonwebtoken'
 
 
 const generateAccessAndRefreshToken = (user)=>{
@@ -133,9 +134,48 @@ const logoutUser = asyncHandler(async(req,res)=>{
         )
 })
 
+const refreshAccessToken = asyncHandler(async(req,res)=>{
+    const incomingRefreshToken = req.cookies?.refreshToken || req.body?.refreshToken
+    if(!incomingRefreshToken){
+        throw new ApiError(400,"Refresh token is required")
+    }
+
+    try {
+        const decodedToken = jwt.verify(incomingRefreshToken,process.env.REFRESH_TOKEN_SECRET)
+        const user = await findById(decodedToken.id)
+        
+        if(!user){
+            throw new ApiError(400,"Invalid refresh token")
+        }
+        
+        if(incomingRefreshToken !== user.refreshToken){
+            throw new ApiError(400,"Invalid refresh token")
+        }
+
+        const {accessToken,refreshToken:newRefreshToken} = generateAccessAndRefreshToken(user) // sending full user obeject to the function
+
+        const options = {
+            httpOnly:true,
+            secure:process.env.NODE_ENV === "production"
+        }
+
+        return res
+                .status(201)
+                .cookie("accessToken",accessToken,options)
+                .cookie("refreshToken",newRefreshToken,options)
+                .json(
+                    new ApiResponse(201,{accessToken, newRefreshToken},"accessToken refreshed")
+                )
+                
+    } catch (error) {
+        throw new ApiError(400,"Invalid Refresh Token")
+    }
+}) 
+
 export {
     registerUser,
     loginUser,
     getAllUsers,
-    logoutUser
+    logoutUser,
+    refreshAccessToken
 }
