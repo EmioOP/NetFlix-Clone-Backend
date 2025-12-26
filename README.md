@@ -1,8 +1,12 @@
-#How to run the project
--clone the project
--rename sample.env -> .env
--add add all the needed credentails
+## How to Run the Project
 
-run below commands 
--npm install -> it will install all the dependencies which needed
--npm run dev -> it will run the project
+1. Clone the repository
+2. Rename `sample.env` to `.env`
+3. Add all the required credentials in the `.env` file
+
+### Install Dependencies & Run
+
+```bash
+npm install   # installs all required dependencies
+npm run dev   # starts the development server
+
