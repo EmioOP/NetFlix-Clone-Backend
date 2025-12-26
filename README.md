@@ -22,4 +22,15 @@ Run the following commands:
 npm install
 npm run dev
 
+```
 
+## Tech Stack
+- Node.js
+- Express.js
+- MySQL
+- mysql2
+- JWT
+- Nodemon
+
+## Scripts
+- "dev": "nodemon --env-file=.env src/index.js",
