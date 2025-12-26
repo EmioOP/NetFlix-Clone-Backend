@@ -1,4 +1,4 @@
-import { createUser, findAll, findById, findByIdAndUpdateUserDetails, findOneUser, updatePassword, updateUserRefreshToken } from "../model/user.model.js";
+import { createUser, findAll, findById, findByIdAndUpdateAvatar, findByIdAndUpdateUserDetails, findOneUser, updatePassword, updateUserRefreshToken } from "../model/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -9,16 +9,16 @@ import { generateAccessToken, generateRefreshToken } from "../utils/generateAcce
 import jwt from 'jsonwebtoken'
 
 
-const generateAccessAndRefreshToken = (user)=>{
+const generateAccessAndRefreshToken = (user) => {
     try {
         const accessToken = generateAccessToken(user)
         const refreshToken = generateRefreshToken(user)
 
-        updateUserRefreshToken(user.id,refreshToken)
+        updateUserRefreshToken(user.id, refreshToken)
 
-        return {accessToken,refreshToken}
+        return { accessToken, refreshToken }
     } catch (error) {
-        throw new ApiError(500,"Error in generating tokens")
+        throw new ApiError(500, "Error in generating tokens")
     }
 }
 
@@ -60,27 +60,27 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
     const { username, email, password } = req.body
     if (!username && !email) {
-        throw new ApiError(400,"Username or email is required")
+        throw new ApiError(400, "Username or email is required")
     }
 
-    const user = await findOneUser(email,username)
+    const user = await findOneUser(email, username)
 
-    if(!user){
-        throw new ApiError(404,"User not found")
+    if (!user) {
+        throw new ApiError(404, "User not found")
     }
 
-    if(!password){
-        throw new ApiError(400,"Password is required")
+    if (!password) {
+        throw new ApiError(400, "Password is required")
     }
 
-    const isPasswordValid = await bcryptjs.compare(password,user[0].password)
+    const isPasswordValid = await bcryptjs.compare(password, user[0].password)
 
-    if(!isPasswordValid){
-        throw new ApiError(401,"Invalid credentials")
+    if (!isPasswordValid) {
+        throw new ApiError(401, "Invalid credentials")
     }
 
-    const {accessToken,refreshToken} = generateAccessAndRefreshToken(user[0])
-    console.log(accessToken,refreshToken)
+    const { accessToken, refreshToken } = generateAccessAndRefreshToken(user[0])
+    console.log(accessToken, refreshToken)
 
 
     const loggedInUser = await findById(user[0].id)
@@ -88,23 +88,23 @@ const loginUser = asyncHandler(async (req, res) => {
     console.log(loggedInUser)
 
 
-    if(!loggedInUser){
-        throw new ApiError(404,"User not found")
+    if (!loggedInUser) {
+        throw new ApiError(404, "User not found")
     }
 
     const options = {
-        httpOnly:true,
-        secure:process.env.NODE_ENV === "production"
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production"
     }
 
 
     return res
-            .status(201)
-            .cookie("accessToken",accessToken,options)
-            .cookie("refreshToken",refreshToken,options)
-            .json(
-                new ApiResponse(201,loggedInUser,"User login successfull")
-            )
+        .status(201)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json(
+            new ApiResponse(201, loggedInUser, "User login successfull")
+        )
 })
 
 const getAllUsers = asyncHandler(async (req, res) => {
@@ -117,143 +117,169 @@ const getAllUsers = asyncHandler(async (req, res) => {
         )
 })
 
-const getCurrentUser = asyncHandler( async(req,res)=>{
+const getCurrentUser = asyncHandler(async (req, res) => {
     return res
-            .status(201)
-            .json(
-                new ApiResponse(201,req.user,"Current user fetched Successfully")
-            )
-}) 
+        .status(201)
+        .json(
+            new ApiResponse(201, req.user, "Current user fetched Successfully")
+        )
+})
 
-const logoutUser = asyncHandler(async(req,res)=>{
-    await updateUserRefreshToken(req.user.id,null)
+const logoutUser = asyncHandler(async (req, res) => {
+    await updateUserRefreshToken(req.user.id, null)
     const options = {
-        httpOnly:true,
-        secure:process.env.NODE_ENV === "production"
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production"
 
     }
 
     return res
         .status(200)
-        .clearCookie("accessToken",options)
-        .clearCookie("refreshToken",options)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
         .json(
-            new ApiResponse(201,{},"Logged out successFully")
+            new ApiResponse(201, {}, "Logged out successFully")
         )
 })
 
-const refreshAccessToken = asyncHandler(async(req,res)=>{
+const refreshAccessToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken = req.cookies?.refreshToken || req.body?.refreshToken
-    if(!incomingRefreshToken){
-        throw new ApiError(400,"Refresh token is required")
+    if (!incomingRefreshToken) {
+        throw new ApiError(400, "Refresh token is required")
     }
 
     try {
-        const decodedToken = jwt.verify(incomingRefreshToken,process.env.REFRESH_TOKEN_SECRET)
+        const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
         const user = await findById(decodedToken.id)
-        
-        if(!user){
-            throw new ApiError(400,"Invalid refresh token")
-        }
-        
-        if(incomingRefreshToken !== user.refreshToken){
-            throw new ApiError(400,"Invalid refresh token")
+
+        if (!user) {
+            throw new ApiError(400, "Invalid refresh token")
         }
 
-        const {accessToken,refreshToken:newRefreshToken} = generateAccessAndRefreshToken(user) // sending full user obeject to the function
+        if (incomingRefreshToken !== user.refreshToken) {
+            throw new ApiError(400, "Invalid refresh token")
+        }
+
+        const { accessToken, refreshToken: newRefreshToken } = generateAccessAndRefreshToken(user) // sending full user obeject to the function
 
         const options = {
-            httpOnly:true,
-            secure:process.env.NODE_ENV === "production"
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production"
         }
 
         return res
-                .status(201)
-                .cookie("accessToken",accessToken,options)
-                .cookie("refreshToken",newRefreshToken,options)
-                .json(
-                    new ApiResponse(201,{accessToken, newRefreshToken},"accessToken refreshed")
-                )
-                
+            .status(201)
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", newRefreshToken, options)
+            .json(
+                new ApiResponse(201, { accessToken, newRefreshToken }, "accessToken refreshed")
+            )
+
     } catch (error) {
-        throw new ApiError(400,"Invalid Refresh Token")
+        throw new ApiError(400, "Invalid Refresh Token")
     }
-}) 
+})
 
 
-const updateUserDetails = asyncHandler(async(req,res)=>{
-    const {username,email,fullName} = req.body
+const updateUserDetails = asyncHandler(async (req, res) => {
+    const { username, email, fullName } = req.body
 
-    if([username,email,fullName].some((field)=>field.trim() === "" || !field)){
-        throw new ApiError(400,"All fields are required")
+    if ([username, email, fullName].some((field) => field.trim() === "" || !field)) {
+        throw new ApiError(400, "All fields are required")
     }
 
-    if(username !== req.user?.username){
-        const existedUser = await findOneUser(undefined,username)// passing undefined because we already used 2 parameter in the findOne user function we can change it in future
-        if(existedUser){
-            throw new ApiError(400,"username already taken")
+    if (username !== req.user?.username) {
+        const existedUser = await findOneUser(undefined, username)// passing undefined because we already used 2 parameter in the findOne user function we can change it in future
+        if (existedUser) {
+            throw new ApiError(400, "username already taken")
         }
 
 
     }
 
-    if(email !== req.user?.email){
-        const existedUser = await findOneUser(email,undefined)
-        if(existedUser){
-            throw new ApiError(400,"email already taken")
+    if (email !== req.user?.email) {
+        const existedUser = await findOneUser(email, undefined)
+        if (existedUser) {
+            throw new ApiError(400, "email already taken")
         }
     }
 
-    const updatedUser = await findByIdAndUpdateUserDetails(req.user.id,{username,fullName,email})
+    const updatedUser = await findByIdAndUpdateUserDetails(req.user.id, { username, fullName, email })
     console.log(updatedUser)
 
-    if(!updatedUser){
-        throw new ApiError(500,"unable to update user details")
+    if (!updatedUser) {
+        throw new ApiError(500, "unable to update user details")
     }
-    
+
 
 
     return res
-            .status(201)
-            .json(
-                new ApiResponse(201,updatedUser,"User details updated successfully")
-            )
+        .status(201)
+        .json(
+            new ApiResponse(201, updatedUser, "User details updated successfully")
+        )
 
 
 })
 
-const changeCurrentPassword = asyncHandler(async(req,res)=>{
-    const {password,newPassword} = req.body
+const changeCurrentPassword = asyncHandler(async (req, res) => {
+    const { password, newPassword } = req.body
 
-    if(!password || !newPassword){
-        throw new ApiError(400,"Old password and new password are required")
+    if (!password || !newPassword) {
+        throw new ApiError(400, "Old password and new password are required")
     }
 
     const user = await findById(req.user?.id)
-    if(!user){
-        throw new ApiError(400,"User Not Found")
+    if (!user) {
+        throw new ApiError(400, "User Not Found")
     }
 
-    const validatePassword = await bcryptjs.compare(password,user?.password)
+    const validatePassword = await bcryptjs.compare(password, user?.password)
 
-    if(!validatePassword){
-        throw new ApiError(400,"Incorrect password")
+    if (!validatePassword) {
+        throw new ApiError(400, "Incorrect password")
     }
 
-    const hashedNewPassword = await bcryptjs.hash(newPassword,10)
+    const hashedNewPassword = await bcryptjs.hash(newPassword, 10)
 
-    await updatePassword(user.id,hashedNewPassword)
+    await updatePassword(user.id, hashedNewPassword)
 
     return res
-            .status(201)
-            .json(
-                new ApiResponse(201,{},"Password Updated Succesfully")
-            )
+        .status(201)
+        .json(
+            new ApiResponse(201, {}, "Password Updated Succesfully")
+        )
 
 
 })
 
-const updateAvatar = asyncHandler(async(req,res)=>{
+const updateAvatar = asyncHandler(async (req, res) => {
+    const avatarLocalPath = req.file?.path
+
+    
+    if (!avatarLocalPath) {
+        throw new ApiError(404, "avatar is required")
+    }
+    
+    
+    const avatar = await uploadOnCloudinary(avatarLocalPath)
+
+    if (!avatar.url) {
+        throw new ApiError(500,"Error while uploading avatar")
+    }
+    const avatarUpdated = await findByIdAndUpdateAvatar(req.user?.id,avatar?.url)
+
+
+    if(!avatarUpdated){
+        throw new ApiError(400,"Unable to update avatar")
+    }
+
+    return res
+            .status(201)
+            .json(
+                new ApiResponse(201,avatarUpdated,"Avatar updated successfully")
+            )
+
 
 })
 
@@ -267,5 +293,6 @@ export {
     refreshAccessToken,
     getCurrentUser,
     updateUserDetails,
-    changeCurrentPassword
+    changeCurrentPassword,
+    updateAvatar
 }
