@@ -1,4 +1,8 @@
-use the sample.env to create .env file
-and all the credentials to it
+#How to run the project
+-clone the project
+-rename sample.env -> .env
+-add add all the needed credentails
 
-for running the project use npm run dev command
+run below commands 
+-npm install -> it will install all the dependencies which needed
+-npm run dev -> it will run the project
