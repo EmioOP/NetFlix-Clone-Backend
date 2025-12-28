@@ -1,8 +1,6 @@
 import pool from "../db/index.js";
 import { ApiError } from "../utils/ApiError.js";
 // const createTable = async () => {
-//     const connection = await connectDB()
-
 //     const createTableQuary = `CREATE TABLE users (
 //   id INT PRIMARY KEY AUTO_INCREMENT,
 //   email VARCHAR(255) UNIQUE NOT NULL,

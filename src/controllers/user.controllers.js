@@ -1,4 +1,4 @@
-import { createUser, findAll, findById, findByIdAndUpdateAvatar, findByIdAndUpdateUserDetails, findOneUser, updatePassword, updateUserRefreshToken } from "../model/user.model.js";
+import { createUser, findAll, findById, findByIdAndUpdateAvatar, findByIdAndUpdateUserDetails, findOneUser, updatePassword, updateUserRefreshToken } from "../model/user.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";

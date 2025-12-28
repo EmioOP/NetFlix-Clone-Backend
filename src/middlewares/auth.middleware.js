@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { ApiError } from '../utils/ApiError.js'
-import { findById, findByIdNoPassAndRefToken } from '../model/user.model.js'
+import { findById, findByIdNoPassAndRefToken } from '../model/user.models.js'
 
 
 const validateJWT = asyncHandler(async(req,res,next)=>{
