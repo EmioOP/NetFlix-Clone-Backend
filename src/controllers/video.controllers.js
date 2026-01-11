@@ -1,4 +1,4 @@
-import { getVideosFromDB, uploadVideoToDB } from "../model/video.models.js";
+import { getVideoById, getVideosFromDB,  increamentVideoViewInDB, uploadVideoToDB } from "../model/video.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -43,7 +43,7 @@ const uploadVideo = asyncHandler(async (req,res)=>{
         views:0,
         owner:req.user.id,
         isPublished:true,
-        duration:0
+        duration:video?.duration || 0
 
     })
 
@@ -80,6 +80,40 @@ const getAllVideos = asyncHandler(async(req,res)=>{
 const getVideo = asyncHandler(async(req,res)=>{
     const {id} = req.params;
 
+    const video = await getVideoById(id)
+
+    if(!video){
+        throw new ApiError(404,"video not found")
+    }
+
+
+    return res
+            .status(201)
+            .json(
+                new ApiResponse(201,video,"video fetched successfully")
+            )
+
+
+
+
+})
+
+
+const increamentViewCount = asyncHandler(async(req,res)=>{ 
+
+    const {id} = req.params
+    const upadted = await increamentVideoViewInDB(id);
+
+    if(!upadted){
+        throw new ApiError(500,"Unable to increament views")
+    }
+
+    return res
+            .status(201)
+            .json(
+                new ApiResponse(201,{},"View increamented")
+            )
+
 })
 
 
@@ -100,5 +134,7 @@ const togglePublishStatus = asyncHandler(async(req,res)=>{
 export {
     updateVideo,
     uploadVideo,
-    getAllVideos
+    getAllVideos,
+    getVideo,
+    increamentViewCount
 }

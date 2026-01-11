@@ -36,7 +36,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     //file uploading feature
     const avatarLocalPath = req.file?.path
-    const avatar = await uploadOnCloudinary(avatarLocalPath)
+    const avatar = avatarLocalPath? await uploadOnCloudinary(avatarLocalPath): null
 
     const user = await createUser({
         username,
@@ -75,6 +75,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const isPasswordValid = await bcryptjs.compare(password, user[0].password)
 
+
     if (!isPasswordValid) {
         throw new ApiError(401, "Invalid credentials")
     }
@@ -94,7 +95,9 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const options = {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production"
+        secure: process.env.NODE_ENV === "production",
+        sameSite: 'lax',
+        // maxAge: 30 * 24 * 60 * 60 * 1000 
     }
 
 
@@ -118,6 +121,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
 })
 
 const getCurrentUser = asyncHandler(async (req, res) => {
+    console.log(req.user)
     return res
         .status(201)
         .json(

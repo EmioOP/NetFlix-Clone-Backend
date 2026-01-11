@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { validateJWT } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
-import { getAllVideos, uploadVideo } from "../controllers/video.controllers.js";
+import { getAllVideos, getVideo, increamentViewCount, uploadVideo } from "../controllers/video.controllers.js";
 
 
 const router = Router()
@@ -14,6 +14,8 @@ router.route("/video").post(validateJWT,
     ]),
     uploadVideo)
 router.route("/").get(getAllVideos)
+router.route("/:id").get(getVideo)
+router.route("/:id/view").post(increamentViewCount)
 
 
 export default router

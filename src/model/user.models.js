@@ -1,24 +1,6 @@
 import pool from "../db/index.js";
 import { ApiError } from "../utils/ApiError.js";
-// const createTable = async () => {
-//     const createTableQuary = `CREATE TABLE users (
-//   id INT PRIMARY KEY AUTO_INCREMENT,
-//   email VARCHAR(255) UNIQUE NOT NULL,
-//   username VARCHAR(100) UNIQUE NOT NULL,
-//   fullName VARCHAR(255) NOT NULL,
-//   password VARCHAR(255) NOT NULL,
-//   avatar VARCHAR(500),
-//   refreshToken TEXT,
-//   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-//   updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-// );`
 
-//     await connection.query(createTableQuary)
-//     console.log("Table created")
-//     await connection.end()
-// }
-
-// createTable()
 
 
 const createUser = async (userData) => {
@@ -50,7 +32,7 @@ const findByIdNoPassAndRefToken = async (id) => {
 const findOneUser = async (email, username) => {
     //we can use if condition to check which one is passed
     const [result] = await pool.query(`SELECT * FROM users WHERE email = ? OR username = ?`, [email, username])
-    // console.log(result)
+    console.log(result)
     return result;
 }
 
@@ -106,3 +88,27 @@ export {
     updatePassword,
     findByIdAndUpdateAvatar
 }
+
+
+
+
+
+// const createTable = async () => {
+//     const createTableQuary = `CREATE TABLE users (
+//   id INT PRIMARY KEY AUTO_INCREMENT,
+//   email VARCHAR(255) UNIQUE NOT NULL,
+//   username VARCHAR(100) UNIQUE NOT NULL,
+//   fullName VARCHAR(255) NOT NULL,
+//   password VARCHAR(255) NOT NULL,
+//   avatar VARCHAR(500),
+//   refreshToken TEXT,
+//   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+//   updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+// );`
+
+//     await connection.query(createTableQuary)
+//     console.log("Table created")
+//     await connection.end()
+// }
+
+// createTable()

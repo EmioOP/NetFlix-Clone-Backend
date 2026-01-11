@@ -2,26 +2,26 @@ import pool from "../db/index.js";
 import { ApiError } from "../utils/ApiError.js";
 
 
-const uploadVideoToDB = async(videoData)=>{
-    const {title,description,thumbnail,videoFile,views,owner,isPublished,duration} = videoData
+const uploadVideoToDB = async (videoData) => {
+    const { title, description, thumbnail, videoFile, views, owner, isPublished, duration } = videoData
 
-    const [insertResult] = await pool.query(`INSERT INTO videos (title,description,thumbnail,videoFile,views,owner,isPublished,duration) VALUES (?,?,?,?,?,?,?,?)`,[title,description,thumbnail,videoFile,views,owner,isPublished,duration])
+    const [insertResult] = await pool.query(`INSERT INTO videos (title,description,thumbnail,videoFile,views,owner,isPublished,duration) VALUES (?,?,?,?,?,?,?,?)`, [title, description, thumbnail, videoFile, views, owner, isPublished, duration])
 
-    if(!insertResult.insertId){
+    if (!insertResult.insertId) {
         return
     }
 
-    const [result] = await pool.query(`SELECT * FROM videos WHERE id =?`,[insertResult.insertId])
+    const [result] = await pool.query(`SELECT * FROM videos WHERE id =?`, [insertResult.insertId])
     return result[0]
 }
 
 
-const getVideoById = async(videoId)=>{
-    const [result] = await pool.query(`SELECT * FROM videos WHERE id =?`,[videoId])
+const getVideoById = async (videoId) => {
+    const [result] = await pool.query(`SELECT * FROM videos WHERE id =?`, [videoId])
     return result[0]
 }
 
-const getVideosFromDB = async({page,limit,query})=>{
+const getVideosFromDB = async ({ page, limit, query }) => {
     page = parseInt(page) || 1
     limit = parseInt(limit) || 10
     const offset = limit * (page - 1)
@@ -29,21 +29,31 @@ const getVideosFromDB = async({page,limit,query})=>{
     let whereClause = ""
     let values = []
 
-    if(query){
+    if (query) {
         whereClause = `WHERE title LIKE ? OR description LIKE ?`
-        values.push(`%${query}%`,`%${query}`)
+        values.push(`%${query}%`, `%${query}`)
     }
 
     const [results] = await pool.query(
-        `SELECT * FROM videos 
+        `SELECT videos.id,title,description,videoFile,thumbnail,views,owner,duration,fullName,avatar,videos.createdAt FROM videos 
+         INNER JOIN users on videos.owner = users.id
         ${whereClause}
-        ORDER BY createdAt DESC 
-        LIMIT ? OFFSET ?`
-        ,[...values,parseInt(limit),parseInt(offset)])
+        ORDER BY videos.createdAt DESC 
+        LIMIT ? OFFSET ? 
+        `
+        , [...values, parseInt(limit), parseInt(offset)])
+
+    console.log(results)
     return results
 }
- 
-export {uploadVideoToDB,getVideosFromDB}
+
+
+const increamentVideoViewInDB = async(videoId)=>{
+    const [results] = await pool.query(`UPDATE videos SET views = views+1 WHERE id=?`,[videoId])
+    return results
+}
+
+export { uploadVideoToDB, getVideosFromDB, getVideoById,increamentVideoViewInDB }
 
 
 
