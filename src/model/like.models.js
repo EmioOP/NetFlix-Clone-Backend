@@ -1,26 +1,36 @@
 import pool from "../db/index.js"
 import { ApiError } from "../utils/ApiError.js"
 
-const getByIdAndAddLike = async(data)=>{
-    const [result] = await pool.query(`INSERT INTO likes(userId,videoId) VALUES(?,?)`,[data.userId,data.videoId])
+const getByIdAndAddLike = async (data) => {
+    const [result] = await pool.query(`INSERT INTO likes(userId,videoId) VALUES(?,?)`, [data.userId, data.videoId])
     return result;
 }
 
-const getByIdAndRemoveLike = async(data)=>{
-    const [result] = await pool.query(`DELETE FROM likes WHERE videoId=? AND userId=?`,[data.videoId,data.userId])
+const getByIdAndRemoveLike = async (data) => {
+    const [result] = await pool.query(`DELETE FROM likes WHERE videoId=? AND userId=?`, [data.videoId, data.userId])
     return result
 }
 
-const checkIsLikedVideo = async(data)=>{
-    const [result] = await pool.query(`SELECT * FROM likes WHERE videoId=? AND userId=?`,[data.videoId,data.userId])
+const checkIsLikedVideo = async (data) => {
+    const [result] = await pool.query(`SELECT * FROM likes WHERE videoId=? AND userId=?`, [data.videoId, data.userId])
     return result.length > 0;
+}
+
+
+const getVideoLikeCount = async (id) => {
+    const [result] = await pool.query(`SELECT COUNT(*) AS like_count
+                                        FROM likes
+                                    WHERE videoId = ?;`, [id])
+
+    return result[0]
+
 }
 
 export {
     getByIdAndAddLike,
     getByIdAndRemoveLike,
-    checkIsLikedVideo
-
+    checkIsLikedVideo,
+    getVideoLikeCount
 }
 
 

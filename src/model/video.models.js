@@ -17,7 +17,11 @@ const uploadVideoToDB = async (videoData) => {
 
 
 const getVideoById = async (videoId) => {
-    const [result] = await pool.query(`SELECT * FROM videos WHERE id =?`, [videoId])
+    const [result] = await pool.query(`SELECT 
+        videos.id,title,description,videoFile,thumbnail,views,owner,duration,fullName,avatar,videos.createdAt 
+        FROM videos 
+        INNER JOIN users on videos.owner = users.id WHERE 
+        videos.id =?`, [videoId])
     return result[0]
 }
 

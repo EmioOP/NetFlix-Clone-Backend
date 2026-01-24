@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { checkIsLikedVideo, getByIdAndAddLike, getByIdAndRemoveLike } from "../model/like.models.js";
+import { checkIsLikedVideo, getByIdAndAddLike, getByIdAndRemoveLike, getVideoLikeCount } from "../model/like.models.js";
 
 
 const toggleVideoLike = asyncHandler(async(req,res)=>{
@@ -56,6 +56,21 @@ const toggleVideoLike = asyncHandler(async(req,res)=>{
 })
 
 
+const getLikes = asyncHandler(async(req,res)=>{
+    const {id} = req.params
+
+    const totalLikeCouts = await getVideoLikeCount(id)
+
+    console.log(totalLikeCouts.like_count)
+
+    return res
+            .status(201)
+            .json(
+                new ApiResponse(201,totalLikeCouts,"Likes count fetched")
+            )
+})
+
 export {
-    toggleVideoLike
+    toggleVideoLike,
+    getLikes
 }
