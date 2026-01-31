@@ -39,7 +39,7 @@ const getVideosFromDB = async ({ page, limit, query }) => {
     }
 
     const [results] = await pool.query(
-        `SELECT videos.id,title,description,videoFile,thumbnail,views,owner,duration,fullName,avatar,videos.createdAt FROM videos 
+        `SELECT videos.id,title,description,videoFile,thumbnail,views,owner,duration,isPublished,fullName,avatar,videos.createdAt FROM videos 
          INNER JOIN users on videos.owner = users.id
         ${whereClause}
         ORDER BY videos.createdAt DESC 

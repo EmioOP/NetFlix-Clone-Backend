@@ -15,12 +15,16 @@ app.use(express.static("public"))
 app.use(cookieParser())
 
 
+
+
+
+
 //import routes
 import userRoutes from './routes/user.routes.js'
 import videoRoutes from './routes/video.routes.js'
 import likeRoutes from './routes/like.routes.js'
 import commentRouter from './routes/comment.routes.js'
-
+import playlistRouter from './routes/playlist.routes.js'
 
 
 
@@ -29,6 +33,7 @@ app.use("/api/v1/users",userRoutes)
 app.use("/api/v1/videos",videoRoutes)
 app.use("/api/v1/likes",likeRoutes)
 app.use("/api/v1/comments",commentRouter)
+app.use("/api/v1/playlists",playlistRouter)
 
 
 
